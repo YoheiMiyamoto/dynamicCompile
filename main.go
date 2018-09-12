@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -11,27 +11,46 @@ import (
 
 const codeTemplate = `
   package main
-  import "log"
+  import "fmt"
 
   func main() {
-    log.Print("%s")
+    fmt.Print("%s")
   }
 `
 
 const fileName = "code.go"
 
 func main() {
-	path, err := getFilePath()
+	http.HandleFunc("/", handler)
+	http.ListenAndServe(":8080", nil)
+}
+
+func handler(w http.ResponseWriter, r *http.Request) {
+	str, err := execute(r.URL.Query().Get("str"))
 	if err != nil {
 		panic(err)
 	}
-	createFile(path, "hello!!!")
+	fmt.Fprintf(w, str)
+}
+
+func execute(str string) (string, error) {
+	path, err := getFilePath()
+	if err != nil {
+		return "", err
+	}
+	createFile(path, str)
 	cmd := exec.Command("go", "run", path)
 	cmd.Stderr = os.Stderr
-	err = cmd.Run()
+	out, err := cmd.Output()
 	if err != nil {
-		log.Print(err.Error())
+		return "", err
 	}
+
+	// err = cmd.Run()
+	// if err != nil {
+	// 	return err
+	// }
+	return string(out), nil
 }
 
 func getFilePath() (string, error) {
