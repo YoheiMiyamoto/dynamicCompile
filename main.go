@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -13,7 +14,7 @@ const codeTemplate = `
   import "log"
 
   func main() {
-    log.Print("hello!")
+    log.Print("%s")
   }
 `
 
@@ -26,10 +27,8 @@ func main() {
 		panic(err)
 	}
 	log.Print(path)
-	createFile(path, []byte(codeTemplate))
+	createFile(path, "hello!!!")
 	cmd := exec.Command("go", "run", path)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
 	if err != nil {
@@ -45,7 +44,8 @@ func getFilePath() (string, error) {
 	return filepath.Join(dirPath, fileName), nil
 }
 
-func createFile(fileName string, code []byte) error {
+func createFile(fileName string, str string) error {
+	code := []byte(fmt.Sprintf(codeTemplate, str))
 	err := ioutil.WriteFile(fileName, code, 0644)
 	if err != nil {
 		return err
