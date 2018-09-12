@@ -22,11 +22,9 @@ const fileName = "code.go"
 
 func main() {
 	path, err := getFilePath()
-	log.Printf("path: %s", path)
 	if err != nil {
 		panic(err)
 	}
-	log.Print(path)
 	createFile(path, "hello!!!")
 	cmd := exec.Command("go", "run", path)
 	cmd.Stderr = os.Stderr
